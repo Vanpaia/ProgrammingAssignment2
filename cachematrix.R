@@ -3,16 +3,25 @@
 ## the inverse of that given matrix has already been computed, simply returns the
 ## cached inverse
 
+## HOW THESE FUNCTIONS NEED TO BE USED:
+## If you have a matrix called x, you first need to used the makeCacheMatrix function
+## to create a new object, ex.:
+## a <- makeCacheMatrix(x)
+## this new object called a can now be used to solve (invert) the matrix, ex.:
+## cacheSolve(a)
+## The first time it will computate the result, try it at least twice to see the 
+## cached version.
+
 ## makeCacheMatrix creates a list consisting of four functions
 
 makeCacheMatrix <- function(x = matrix()) {
   m <- NULL # m is the object the inverse matrix will be stored in later
-  set <- function(y) {
+  set <- function(y) { # the set function (called with x$set()) enables you to change the matrix originally used (change x) and restores the object that contains the inverse (m) to NULL. It does so in the parent environment, so other functions are influenced by this.
     x <<- y
     m <<- NULL
   }
   get <- function() x # the get function (called with x$get()) returns the original matrix 
-  setinv <- function(solve) m <<- solve 
+  setinv <- function(solve) m <<- solve # the setinv function stores the inverse matrix (solve) in m. It does so in the parent environment, so other functions are influenced by this.
   getinv <- function() m # the getinv funtion (called with x$getinv()) returns the inversed matrix
   list(set = set, get = get, # makeCacheMatrix creates a list with these four functions
        setinv = setinv,
@@ -25,13 +34,13 @@ makeCacheMatrix <- function(x = matrix()) {
 ## functions of makeCacheMatrix
 
 cacheSolve <- function(x, ...) {
-  m <- x$getinv()
-  if(!is.null(m)) {
+  m <- x$getinv() # The function changes m to the result of getinv(), called on x.
+  if(!is.null(m)) { # If this has previously been computed it is saved in the parent environment, so it will not be NULL.
     message("getting cached data")
     return(m)
   }
-  data <- x$get()
-  m <- solve(data, ...)
-  x$setinv(m)
-  m
+  data <- x$get() # A temporary object is made, loading the original matrix, whith which the list was made.
+  m <- solve(data, ...) # The matrix gets inverted and saved in m
+  x$setinv(m) # The setinv() function gets called, storing the inverse in the parent environment, meaning the next time m != NULL and the cached version can be accessed.
+  m # m, containing the inverse matrix gets printed.
 }
